@@ -25,7 +25,7 @@ $(Project_Name).bin: $(Project_Name).elf
 	$(CC)objcopy.exe -O binary $< $@
 
 clean:
-	del *.o *.elf *.bin
+	del *.o *.elf *.bin *.map
 	@echo "================= Cleaning Is Done ================"
 
 	
