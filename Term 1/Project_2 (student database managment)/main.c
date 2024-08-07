@@ -9,5 +9,5 @@ void main(void){
     q = createStudentDB(q);
     q = addStudentManually(q);
     q = addStudentManually(q);
-    showAllStudent(q);
+    findStudentByRollNumber(q , 19015866);
 }

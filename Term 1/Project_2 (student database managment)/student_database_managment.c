@@ -1,13 +1,13 @@
 #include<stdio.h>
 #include<stdlib.h>
-
+#include<string.h>
 
 #include"student_database_managment.h"
 
 static studentDB * helpAddStudent(studentDB * temp);
 static void helpPrintStudentsData(studentDB * temp);
-static stuentDB_status_t helpFindStudentByRollName(studentDB * temp , uint32_t roll);
-
+static studentDB * helpFindStudentByRollNumber(studentDB * temp , uint32_t roll , uint8_t * flag);
+static stuentDB_status_t helpFindStudentByFirstName(studentDB * temp , sint8_t fName[50]);
 
 queue * createStudentDB(queue* q){
     q->size = 0;
@@ -34,21 +34,31 @@ queue* addStudentManually(queue *q){
 
 void findStudentByRollNumber(queue *q , uint32_t roll){
     stuentDB_status_t status;
+    uint8_t flag = 0;
     if(q != NULL){
         studentDB * temp = q->front;
-        status = helpFindStudentByRollName(temp , roll);
-        if(status == STUDENT_FOUND){
+        temp = helpFindStudentByRollNumber(temp , roll , &flag);
+        if(flag == 1){
             printf("\nThis roll Number is found !\n");
             helpPrintStudentsData(temp);
         }
-        else if(status == STUDENT_NOT_FOUND) printf("\nThis roll Number isn't found in the system\n");
-        else printf("\nHeap overflow\n");
+        else printf("\nThis roll Number isn't found in the system\n");
     }
     else printf("\nThere is not any database for student\n");  
 }
 
 void findStudentByFirstName(queue *q , sint8_t fName[50]){
-
+    stuentDB_status_t status;
+    if(q != NULL){
+        studentDB * temp = q->front ;
+        status = helpFindStudentByFirstName(temp , fName);
+        if(status == STUDENT_FOUND){
+            printf("\nThis Name is found\n");
+            helpPrintStudentsData(temp);
+        }
+        else if(status == STUDENT_NOT_FOUND) printf("\nThis first Name isn't found in the system\n");
+    }
+    else printf("\nThere is not any database for student\n");
 }
 
 void findStudentsByCourseID(queue *q , uint32_t courseID){
@@ -129,19 +139,37 @@ static void helpPrintStudentsData(studentDB * temp){
 }
 
 
-static stuentDB_status_t helpFindStudentByRollName(studentDB * temp , uint32_t roll){
+static studentDB * helpFindStudentByRollNumber(studentDB * temp , uint32_t roll , uint8_t * flag){
      stuentDB_status_t status;
+     *flag = 0;
     if(temp != NULL){
-        uint8_t flag = 0;
         while(temp != NULL){
             if(temp->roll == roll){
-                flag = 1;
+                *flag = 1;
                 break;
             }
             temp = temp->next;
         }
+    }
+    return temp;
+}
+
+
+
+static stuentDB_status_t helpFindStudentByFirstName(studentDB * temp , sint8_t fName[50]){
+    stuentDB_status_t status;
+    if(temp != NULL){
+        uint8_t flag = 0;
+        while(temp != NULL){
+            if(!strcmp(temp->fName , fName)){
+                flag = 1;
+                break;
+            }
+            temp = temp->next;           
+        }
         if(flag) status = STUDENT_FOUND;
         else status = STUDENT_NOT_FOUND ;
+        if(temp == NULL) status = QUEUE_NULL;
     }
     else{
         status = QUEUE_NULL;
