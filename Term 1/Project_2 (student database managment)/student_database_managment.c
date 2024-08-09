@@ -112,7 +112,36 @@ queue *  updateStudentByRollNumber(queue * q , uint32_t roll){
 }
 
 queue * deleteStudentByRollNumber(queue * q , uint32_t roll){
-
+    studentDB * temp = q->front;
+    studentDB * prev = q->front;
+    uint8_t flag = 0;
+    if(temp->roll == roll){
+        /*delete the front node*/
+        q->front = temp->next;
+        prev->next = temp;
+        free(temp);
+        printf("\nThe student with unique roll number %d is deleted from the system\n",roll);
+    }
+    else{
+        temp = temp->next;
+        while(temp != NULL){
+            if(temp->roll == roll){
+                flag = 1;
+                break;
+            }
+            prev = temp;
+            temp = temp->next;
+        }
+        if(!flag){
+            printf("\nthis roll number %d doesn't exist in the system\n",roll);
+        }
+        else{
+            prev->next = temp->next;
+            free(temp);
+            printf("\nThe student with unique roll number %d is deleted from the system\n",roll);
+        }
+    }
+    return q;
 }
 
 
