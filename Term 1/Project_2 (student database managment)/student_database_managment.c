@@ -7,7 +7,7 @@
 static studentDB * helpAddStudent(studentDB * temp);
 static void helpPrintStudentsData(studentDB * temp);
 static studentDB * helpFindStudentByRollNumber(studentDB * temp , uint32_t roll , uint8_t * flag);
-static stuentDB_status_t helpFindStudentByFirstName(studentDB * temp , sint8_t fName[50]);
+static studentDB * helpFindStudentByFirstName(studentDB * temp , sint8_t fName[50] , uint8_t * flag);
 
 queue * createStudentDB(queue* q){
     q->size = 0;
@@ -33,7 +33,6 @@ queue* addStudentManually(queue *q){
 }
 
 void findStudentByRollNumber(queue *q , uint32_t roll){
-    stuentDB_status_t status;
     uint8_t flag = 0;
     if(q != NULL){
         studentDB * temp = q->front;
@@ -49,21 +48,38 @@ void findStudentByRollNumber(queue *q , uint32_t roll){
 
 void findStudentByFirstName(queue *q , sint8_t fName[50]){
     stuentDB_status_t status;
+    uint8_t flag = 0;
     if(q != NULL){
         studentDB * temp = q->front ;
-        status = helpFindStudentByFirstName(temp , fName);
-        if(status == STUDENT_FOUND){
+        temp = helpFindStudentByFirstName(temp , fName ,&flag);
+        if(flag == 1){
             printf("\nThis Name is found\n");
             helpPrintStudentsData(temp);
         }
-        else if(status == STUDENT_NOT_FOUND) printf("\nThis first Name isn't found in the system\n");
+        else printf("\nThis first Name isn't found in the system\n");
     }
     else printf("\nThere is not any database for student\n");
 }
 
-void findStudentsByCourseID(queue *q , uint32_t courseID){
 
+void findStudentsByCourseID(queue *q , uint32_t courseID){
+    if(q != NULL){
+        studentDB * temp = q->front;
+        for(uint32_t i = 0 ; i < q->size ;  i++){
+            for(uint8_t j = 0 ; j < temp->coursesNumber ; j++){
+                if(temp->coursesID[j] == courseID){
+                    printf("\n%s is registered in this course (%d)\n",temp->fName , courseID);
+                    fflush(stdin);fflush(stdout);
+                    helpPrintStudentsData(temp);
+                    printf("\n===========================================================\n");
+                }
+            }
+            temp = temp->next;
+        }
+    }
+    else printf("\nThere is not any database for student\n"); 
 }
+
 
 void showAllStudent(queue * q){
     studentDB * temp = q->front;
@@ -81,7 +97,18 @@ uint32_t studentsCounts(queue * q){
 }
 
 queue *  updateStudentByRollNumber(queue * q , uint32_t roll){
-
+    uint8_t flag = 0;
+    if(q != NULL){
+        studentDB * temp = q->front;
+        temp = helpFindStudentByRollNumber(temp , roll , &flag);
+        if(flag == 1){
+            printf("\nThis roll Number is found !\n");
+            temp = helpAddStudent(temp);
+        }
+        else printf("\nThis roll Number isn't found in the system\n");
+    }
+    else printf("\nThere is not any database for student\n");  
+    return q;
 }
 
 queue * deleteStudentByRollNumber(queue * q , uint32_t roll){
@@ -140,9 +167,8 @@ static void helpPrintStudentsData(studentDB * temp){
 
 
 static studentDB * helpFindStudentByRollNumber(studentDB * temp , uint32_t roll , uint8_t * flag){
-     stuentDB_status_t status;
-     *flag = 0;
     if(temp != NULL){
+          *flag = 0;
         while(temp != NULL){
             if(temp->roll == roll){
                 *flag = 1;
@@ -156,23 +182,17 @@ static studentDB * helpFindStudentByRollNumber(studentDB * temp , uint32_t roll 
 
 
 
-static stuentDB_status_t helpFindStudentByFirstName(studentDB * temp , sint8_t fName[50]){
-    stuentDB_status_t status;
+static studentDB * helpFindStudentByFirstName(studentDB * temp , sint8_t fName[50] , uint8_t * flag){
     if(temp != NULL){
-        uint8_t flag = 0;
+         *flag = 0;
         while(temp != NULL){
             if(!strcmp(temp->fName , fName)){
-                flag = 1;
+                *flag = 1;
                 break;
             }
             temp = temp->next;           
         }
-        if(flag) status = STUDENT_FOUND;
-        else status = STUDENT_NOT_FOUND ;
-        if(temp == NULL) status = QUEUE_NULL;
+        
     }
-    else{
-        status = QUEUE_NULL;
-    }
-    return status;
+    return temp;
 }
