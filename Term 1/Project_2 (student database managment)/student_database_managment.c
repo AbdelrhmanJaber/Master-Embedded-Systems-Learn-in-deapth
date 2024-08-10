@@ -4,10 +4,13 @@
 
 #include"student_database_managment.h"
 
-static studentDB * helpAddStudent(studentDB * temp);
+static studentDB * helpAddStudentFromFile (studentDB * temp);
+static studentDB * helpAddStudentManually(studentDB * temp);
 static void helpPrintStudentsData(studentDB * temp);
 static studentDB * helpFindStudentByRollNumber(studentDB * temp , uint32_t roll , uint8_t * flag);
 static studentDB * helpFindStudentByFirstName(studentDB * temp , sint8_t fName[50] , uint8_t * flag);
+ 
+
 
 queue * createStudentDB(queue* q){
     q->size = 0;
@@ -16,10 +19,28 @@ queue * createStudentDB(queue* q){
     return q;
 }
 
+
+queue * addStudentFromFile(queue * q){
+    studentDB * student = (studentDB *) malloc(sizeof(studentDB));
+    if(student != NULL){
+        student = helpAddStudentFromFile(student);
+        student->next = NULL;
+        /*CHECK IF FIRST NODE*/
+        if(q->rear == NULL) q->front = student; 
+        else q->rear->next = student;
+        q->rear = student;
+        q->size++;
+    }
+    else{
+        return NULL;
+    }
+}
+
+
 queue* addStudentManually(queue *q){
     studentDB * student = (studentDB *) malloc(sizeof(studentDB));
     if(student != NULL){
-        student = helpAddStudent(student);
+        student = helpAddStudentManually(student);
         student->next = NULL;
         /*CHECK IF FIRST NODE*/
         if(q->rear == NULL) q->front = student; 
@@ -45,6 +66,8 @@ void findStudentByRollNumber(queue *q , uint32_t roll){
     }
     else printf("\nThere is not any database for student\n");  
 }
+
+
 
 void findStudentByFirstName(queue *q , sint8_t fName[50]){
     stuentDB_status_t status;
@@ -103,7 +126,7 @@ queue *  updateStudentByRollNumber(queue * q , uint32_t roll){
         temp = helpFindStudentByRollNumber(temp , roll , &flag);
         if(flag == 1){
             printf("\nThis roll Number is found !\n");
-            temp = helpAddStudent(temp);
+            temp = helpAddStudentManually(temp);
         }
         else printf("\nThis roll Number isn't found in the system\n");
     }
@@ -146,7 +169,38 @@ queue * deleteStudentByRollNumber(queue * q , uint32_t roll){
 
 
 
-static studentDB * helpAddStudent(studentDB * temp){
+
+/*========================================= HELP FUNCTIONS ============================================*/
+
+static studentDB * helpAddStudentFromFile (studentDB * temp){
+    FILE * studentFile = fopen("student.txt","r");
+    uint8_t flag = 0;
+    if(studentFile == NULL){
+        printf("\nfile is not found\n");
+        printf("\nfailed to add new student\n");
+        return NULL;
+    }
+    /*read all file until the end*/
+    while(!feof(studentFile)){
+        fscanf(studentFile , "%d" , &temp->roll);
+        fflush(stdin);fflush(stdout);
+        fscanf(studentFile, "%s", &temp->fName);
+        fflush(stdin);fflush(stdout);
+		fscanf(studentFile, "%s", &temp->lName);
+        fflush(stdin);fflush(stdout);
+		fscanf(studentFile, "%f", &temp->gpa);
+        fflush(stdin);fflush(stdout);
+        fscanf(studentFile , "%d" , &temp->coursesNumber);
+        fflush(stdin);fflush(stdout);
+        for(uint8_t i = 0 ; i < temp->coursesNumber ; i++){
+            fscanf(studentFile , "%d" , &temp->coursesID[i]);
+        }
+    }
+    fclose(studentFile);
+    return temp ;
+}
+
+static studentDB * helpAddStudentManually(studentDB * temp){
     printf("Enter your first name : ");
     fflush(stdin); fflush(stdout);
     gets(temp->fName);

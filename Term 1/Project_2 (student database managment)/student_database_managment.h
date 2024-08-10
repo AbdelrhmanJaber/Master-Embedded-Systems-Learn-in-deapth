@@ -57,6 +57,8 @@ typedef enum myEnum{
 
 queue * createStudentDB(queue* q);
 
+queue * addStudentFromFile(queue * q);
+
 queue* addStudentManually(queue *q);
 
 void findStudentByRollNumber(queue *q , uint32_t roll);
