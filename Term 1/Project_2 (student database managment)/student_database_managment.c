@@ -4,12 +4,12 @@
 
 #include"student_database_managment.h"
 
-static studentDB * helpAddStudentFromFile (studentDB * temp);
-static studentDB * helpAddStudentManually(studentDB * temp);
+static studentDB * helpAddStudentFromFile (queue * q , studentDB * temp);
+static studentDB * helpAddStudentManually(queue * q , studentDB * temp);
 static void helpPrintStudentsData(studentDB * temp);
 static studentDB * helpFindStudentByRollNumber(studentDB * temp , uint32_t roll , uint8_t * flag);
 static studentDB * helpFindStudentByFirstName(studentDB * temp , sint8_t fName[50] , uint8_t * flag);
- 
+static uint8_t isRollNumberUnique(queue * q , uint32_t roll); 
 
 
 queue * createStudentDB(queue* q){
@@ -23,7 +23,7 @@ queue * createStudentDB(queue* q){
 queue * addStudentFromFile(queue * q){
     studentDB * student = (studentDB *) malloc(sizeof(studentDB));
     if(student != NULL){
-        student = helpAddStudentFromFile(student);
+        student = helpAddStudentFromFile(q , student);
         student->next = NULL;
         /*CHECK IF FIRST NODE*/
         if(q->rear == NULL) q->front = student; 
@@ -40,7 +40,7 @@ queue * addStudentFromFile(queue * q){
 queue* addStudentManually(queue *q){
     studentDB * student = (studentDB *) malloc(sizeof(studentDB));
     if(student != NULL){
-        student = helpAddStudentManually(student);
+        student = helpAddStudentManually(q , student);
         student->next = NULL;
         /*CHECK IF FIRST NODE*/
         if(q->rear == NULL) q->front = student; 
@@ -126,7 +126,7 @@ queue *  updateStudentByRollNumber(queue * q , uint32_t roll){
         temp = helpFindStudentByRollNumber(temp , roll , &flag);
         if(flag == 1){
             printf("\nThis roll Number is found !\n");
-            temp = helpAddStudentManually(temp);
+            temp = helpAddStudentManually(q , temp);
         }
         else printf("\nThis roll Number isn't found in the system\n");
     }
@@ -172,7 +172,8 @@ queue * deleteStudentByRollNumber(queue * q , uint32_t roll){
 
 /*========================================= HELP FUNCTIONS ============================================*/
 
-static studentDB * helpAddStudentFromFile (studentDB * temp){
+static studentDB * helpAddStudentFromFile (queue * q , studentDB * temp){
+    uint32_t size = 0;
     FILE * studentFile = fopen("student.txt","r");
     uint8_t flag = 0;
     if(studentFile == NULL){
@@ -184,6 +185,15 @@ static studentDB * helpAddStudentFromFile (studentDB * temp){
     while(!feof(studentFile)){
         fscanf(studentFile , "%d" , &temp->roll);
         fflush(stdin);fflush(stdout);
+        flag = isRollNumberUnique(q , temp->roll);
+        while (flag == 1)
+        {
+            printf("\nthis roll number in the file you entered is already exist\n");
+            printf("Enter your unique roll number : ");
+            scanf("%d",&temp->roll);
+            fflush(stdin); fflush(stdout);
+            flag = isRollNumberUnique(q , temp->roll);
+        }
         fscanf(studentFile, "%s", &temp->fName);
         fflush(stdin);fflush(stdout);
 		fscanf(studentFile, "%s", &temp->lName);
@@ -195,12 +205,29 @@ static studentDB * helpAddStudentFromFile (studentDB * temp){
         for(uint8_t i = 0 ; i < temp->coursesNumber ; i++){
             fscanf(studentFile , "%d" , &temp->coursesID[i]);
         }
+        size++;
     }
     fclose(studentFile);
+    q->size += (size - 1); //for multiple students in the file
+    printf("\nStudent data is added from the file correctly\n");
     return temp ;
 }
 
-static studentDB * helpAddStudentManually(studentDB * temp){
+static studentDB * helpAddStudentManually(queue * q , studentDB * temp){
+    uint8_t flag ;
+    printf("Enter your unique roll number : ");
+    scanf("%d",&temp->roll);
+    fflush(stdin); fflush(stdout);
+    flag = isRollNumberUnique(q , temp->roll);
+    while (flag == 1)
+    {
+        printf("\nthis roll number is already exist\n");
+        printf("Enter your unique roll number : ");
+        scanf("%d",&temp->roll);
+        fflush(stdin); fflush(stdout);
+        flag = isRollNumberUnique(q , temp->roll);
+    }
+    
     printf("Enter your first name : ");
     fflush(stdin); fflush(stdout);
     gets(temp->fName);
@@ -208,9 +235,6 @@ static studentDB * helpAddStudentManually(studentDB * temp){
     printf("Enter your last name : ");
     fflush(stdin); fflush(stdout);
     gets(temp->lName);
-    fflush(stdin); fflush(stdout);
-    printf("Enter your unique roll number : ");
-    scanf("%d",&temp->roll);
     fflush(stdin); fflush(stdout);
     printf("Enter your GPA : ");
     fflush(stdin); fflush(stdout);
@@ -279,3 +303,28 @@ static studentDB * helpFindStudentByFirstName(studentDB * temp , sint8_t fName[5
     }
     return temp;
 }
+
+
+
+static uint8_t isRollNumberUnique(queue * q , uint32_t roll){
+    uint8_t flag = 0;
+    studentDB * temp = q->front;
+    if(temp != NULL){
+        while (temp != NULL)
+        {
+            if(temp->roll == roll){
+                flag = 1;
+                break;
+            }
+            temp = temp->next;
+        }
+    }
+    else{
+        /*this student is the first
+          since q-> front is null*/
+    }
+    return flag;
+}
+
+
+
