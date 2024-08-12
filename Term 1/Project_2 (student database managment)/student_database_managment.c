@@ -11,6 +11,12 @@ static studentDB * helpFindStudentByRollNumber(studentDB * temp , uint32_t roll 
 static studentDB * helpFindStudentByFirstName(studentDB * temp , sint8_t fName[50] , uint8_t * flag);
 static uint8_t isRollNumberUnique(queue * q , uint32_t roll); 
 
+/**
+ * @brief Create a Student object in data base managment
+ * 
+ * @param q : reference for queue that represent the data base
+ * @return pointer to the queue 
+ */
 
 queue * createStudentDB(queue* q){
     q->size = 0;
@@ -20,27 +26,42 @@ queue * createStudentDB(queue* q){
 }
 
 
+/**
+ * @brief add student data from file text
+ * 
+ * @param q : reference for queue that represent the data base
+ * @return pointer to the queue 
+ */
+
 queue * addStudentFromFile(queue * q){
     studentDB * student = (studentDB *) malloc(sizeof(studentDB));
     if(student != NULL){
-        student = helpAddStudentFromFile(q , student);
+        student = helpAddStudentFromFile(q , student); //fill student data from the file 
         student->next = NULL;
         /*CHECK IF FIRST NODE*/
-        if(q->rear == NULL) q->front = student; 
-        else q->rear->next = student;
-        q->rear = student;
-        q->size++;
+        if(q->rear == NULL) q->front = student; //first node
+        else q->rear->next = student; //put rear reference for O(1) dequeue 
+        q->rear = student; 
+        q->size++; 
     }
     else{
         return NULL;
     }
 }
+
+
+/**
+ * @brief add student data manually by the user 
+ * 
+ * @param q : reference for queue that represent the data base 
+ * @return pointer to the queue 
+ */
 
 
 queue* addStudentManually(queue *q){
     studentDB * student = (studentDB *) malloc(sizeof(studentDB));
     if(student != NULL){
-        student = helpAddStudentManually(q , student);
+        student = helpAddStudentManually(q , student); //fill student data manually
         student->next = NULL;
         /*CHECK IF FIRST NODE*/
         if(q->rear == NULL) q->front = student; 
@@ -53,11 +74,21 @@ queue* addStudentManually(queue *q){
     }
 }
 
+/**
+ * @brief find a student in the data base system by using his unique roll number
+ * 
+ * @param q : reference for queue that represent the data base
+ * @param roll : the roll number that student want (should be unique)
+ */
+
 void findStudentByRollNumber(queue *q , uint32_t roll){
     uint8_t flag = 0;
-    if(q != NULL){
+    if(q->front == NULL){
+        printf("\nThe system is Empty\n");
+    }
+    else if(q != NULL){
         studentDB * temp = q->front;
-        temp = helpFindStudentByRollNumber(temp , roll , &flag);
+        temp = helpFindStudentByRollNumber(temp , roll , &flag); 
         if(flag == 1){
             printf("\nThis roll Number is found !\n");
             helpPrintStudentsData(temp);
@@ -68,11 +99,19 @@ void findStudentByRollNumber(queue *q , uint32_t roll){
 }
 
 
+/**
+ * @brief find a student in the data base system by using his first name
+ * 
+ * @param q : reference for queue that represent the data base
+ * @param fName : the first name that user entered
+ */
 
 void findStudentByFirstName(queue *q , sint8_t fName[50]){
-    stuentDB_status_t status;
     uint8_t flag = 0;
-    if(q != NULL){
+    if(q->front == NULL){
+        printf("\nThe system is Empty\n");
+    }
+    else if(q != NULL){
         studentDB * temp = q->front ;
         temp = helpFindStudentByFirstName(temp , fName ,&flag);
         if(flag == 1){
@@ -81,12 +120,23 @@ void findStudentByFirstName(queue *q , sint8_t fName[50]){
         }
         else printf("\nThis first Name isn't found in the system\n");
     }
-    else printf("\nThere is not any database for student\n");
+    else printf("\nThere is not any database for student\n"); //queue is not found
 }
 
 
+/**
+ * @brief each student registered number of courses 
+ * this function search for each student is registered certain course
+ * @param q : reference for queue that represent the data base
+ * @param courseID
+ */
+
 void findStudentsByCourseID(queue *q , uint32_t courseID){
-    if(q != NULL){
+    uint8_t flag = 0;
+    if(q->front == NULL){
+        printf("\nThe system is Empty\n");
+    }
+    else if(q != NULL){
         studentDB * temp = q->front;
         for(uint32_t i = 0 ; i < q->size ;  i++){
             for(uint8_t j = 0 ; j < temp->coursesNumber ; j++){
@@ -95,33 +145,64 @@ void findStudentsByCourseID(queue *q , uint32_t courseID){
                     fflush(stdin);fflush(stdout);
                     helpPrintStudentsData(temp);
                     printf("\n===========================================================\n");
+                    flag = 1;
                 }
             }
             temp = temp->next;
         }
     }
     else printf("\nThere is not any database for student\n"); 
+    if(!flag) printf("There is no student is registered in this course\n");
 }
 
+
+/**
+ * @brief printf all students data in the system 
+ * 
+ * @param q : : reference for queue that represent the data base
+ */
 
 void showAllStudent(queue * q){
     studentDB * temp = q->front;
-    while (temp != NULL)
-    {
-        helpPrintStudentsData(temp);
-        printf("\n===========================================================\n");
-        temp = temp->next;
+    if(q->front == NULL){
+        printf("\nThe system is Empty\n");
     }
-    
+    else 
+    {
+        while (temp != NULL)
+        {
+            helpPrintStudentsData(temp);
+            printf("\n===========================================================\n");
+            temp = temp->next;
+        }
+    }
 }
+
+/**
+ * @brief function to return number of students if the systems
+ * 
+ * @param q 
+ * @return size of nodes in the queue 
+ */
 
 uint32_t studentsCounts(queue * q){
     return q->size;
 }
 
+/**
+ * @brief function for modification and updating student data
+ * 
+ * @param q : reference for queue that represent the data base
+ * @param roll : the unique roll number for the student
+ * @return queue* 
+ */
+
 queue *  updateStudentByRollNumber(queue * q , uint32_t roll){
     uint8_t flag = 0;
-    if(q != NULL){
+    if(q->front == NULL){
+        printf("\nThe system is Empty\n");
+    }
+    else if(q != NULL){
         studentDB * temp = q->front;
         temp = helpFindStudentByRollNumber(temp , roll , &flag);
         if(flag == 1){
@@ -134,16 +215,29 @@ queue *  updateStudentByRollNumber(queue * q , uint32_t roll){
     return q;
 }
 
+
+/**
+ * @brief delete a student from the system 
+ * 
+ * @param q : reference for queue that represent the data base
+ * @param roll : the unique roll number for the student
+ * @return queue* 
+ */
+
 queue * deleteStudentByRollNumber(queue * q , uint32_t roll){
     studentDB * temp = q->front;
     studentDB * prev = q->front;
     uint8_t flag = 0;
-    if(temp->roll == roll){
+    if(q->front == NULL){
+        printf("\nThe system is Empty\n");
+    }
+    else if(temp->roll == roll){
         /*delete the front node*/
         q->front = temp->next;
         prev->next = temp;
         free(temp);
         printf("\nThe student with unique roll number %d is deleted from the system\n",roll);
+        q->size--;
     }
     else{
         temp = temp->next;
@@ -162,6 +256,7 @@ queue * deleteStudentByRollNumber(queue * q , uint32_t roll){
             prev->next = temp->next;
             free(temp);
             printf("\nThe student with unique roll number %d is deleted from the system\n",roll);
+            q->size--;
         }
     }
     return q;
@@ -186,7 +281,7 @@ static studentDB * helpAddStudentFromFile (queue * q , studentDB * temp){
         fscanf(studentFile , "%d" , &temp->roll);
         fflush(stdin);fflush(stdout);
         flag = isRollNumberUnique(q , temp->roll);
-        while (flag == 1)
+        while (flag == 1) //check if the roll number unique
         {
             printf("\nthis roll number in the file you entered is already exist\n");
             printf("Enter your unique roll number : ");
@@ -208,8 +303,7 @@ static studentDB * helpAddStudentFromFile (queue * q , studentDB * temp){
         size++;
     }
     fclose(studentFile);
-    q->size += (size - 1); //for multiple students in the file
-    printf("\nStudent data is added from the file correctly\n");
+    q->size += (size - 1); //for multiple students in the file 
     return temp ;
 }
 
@@ -219,7 +313,7 @@ static studentDB * helpAddStudentManually(queue * q , studentDB * temp){
     scanf("%d",&temp->roll);
     fflush(stdin); fflush(stdout);
     flag = isRollNumberUnique(q , temp->roll);
-    while (flag == 1)
+    while (flag == 1) //check if the roll number unique
     {
         printf("\nthis roll number is already exist\n");
         printf("Enter your unique roll number : ");

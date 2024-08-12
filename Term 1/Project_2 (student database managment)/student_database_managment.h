@@ -39,20 +39,10 @@ typedef struct myStruct{
 }queue;
 
 
-/**
- * @brief enum for queue status
- * 
- */
 
-typedef enum myEnum{
-    QUEUE_NO_ERROR,
-    QUEUE_FULL,
-    QUEUE_EMPTY,
-    QUEUE_NULL,
-    STUDENT_NOT_FOUND,
-    STUDENT_FOUND
-}stuentDB_status_t;
 
+
+/*prototypes for functions*/
 
 
 queue * createStudentDB(queue* q);
